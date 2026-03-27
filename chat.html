@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Niyantra AI | Intelligent Command Center</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(circle at 20% 30%, #0a0f0c, #030605);
+            font-family: 'Inter', 'Space Grotesk', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        /* animated background grain */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-radial-gradient(circle at 20% 30%, rgba(0,0,0,0.05) 0px, rgba(0,0,0,0.05) 2px, transparent 2px, transparent 6px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* glow spots */
+        .bg-spot {
+            position: fixed;
+            width: 50vw;
+            height: 50vw;
+            background: radial-gradient(circle, rgba(255,77,46,0.08) 0%, rgba(44,95,45,0) 70%);
+            border-radius: 50%;
+            top: -20%;
+            right: -10%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .bg-spot2 {
+            position: fixed;
+            width: 60vw;
+            height: 60vw;
+            background: radial-gradient(circle, rgba(44,95,45,0.1) 0%, rgba(255,140,66,0) 70%);
+            bottom: -30%;
+            left: -20%;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .chat-container {
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 1.8rem;
+        }
+
+        /* header with back/home link */
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .logo-area h2 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #FF4D2E 0%, #FF8C42 50%, #2C5F2D 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+        }
+        .home-link {
+            color: #FF9A5A;
+            text-decoration: none;
+            font-weight: 500;
+            background: rgba(255, 77, 46, 0.15);
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            backdrop-filter: blur(8px);
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            border: 1px solid rgba(255, 140, 66, 0.3);
+        }
+        .home-link:hover {
+            background: rgba(255, 77, 46, 0.3);
+            border-color: #FF8C42;
+            transform: translateY(-2px);
+        }
+
+        /* searchbar-style chat input */
+        .chat-input-area {
+            background: rgba(18, 28, 22, 0.7);
+            backdrop-filter: blur(16px);
+            border-radius: 80px;
+            border: 1px solid rgba(255, 77, 46, 0.4);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3), 0 0 0 1px rgba(255, 140, 66, 0.1);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            padding: 0.3rem 0.3rem 0.3rem 1.5rem;
+        }
+        .chat-input-area:focus-within {
+            border-color: #FF8C42;
+            box-shadow: 0 0 20px rgba(255, 77, 46, 0.3), 0 0 0 2px rgba(255, 140, 66, 0.3);
+        }
+        .chat-input-area input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 1.1rem 0.8rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #f0f3ea;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+        }
+        .chat-input-area input::placeholder {
+            color: #9ab88a;
+            font-weight: 400;
+            letter-spacing: -0.2px;
+        }
+        .chat-input-area button {
+            background: linear-gradient(125deg, #FF4D2E, #FF8C42);
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 60px;
+            color: white;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .chat-input-area button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 12px #FF8C42;
+        }
+
+        /* AI Reply Area */
+        .ai-reply-area {
+            background: rgba(10, 18, 12, 0.65);
+            backdrop-filter: blur(12px);
+            border-radius: 28px;
+            padding: 1.8rem;
+            min-height: 280px;
+            border: 1px solid rgba(44, 95, 45, 0.5);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.4);
+            transition: all 0.2s;
+        }
+        .reply-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1.2rem;
+            padding-bottom: 0.6rem;
+            border-bottom: 1px solid rgba(255, 140, 66, 0.3);
+        }
+        .reply-header i {
+            font-size: 1.6rem;
+            color: #FF8C42;
+            filter: drop-shadow(0 0 4px #FF4D2E);
+        }
+        .reply-header span {
+            font-weight: 600;
+            color: #FFD6B5;
+            letter-spacing: -0.2px;
+        }
+        .reply-content {
+            color: #e2ecd9;
+            line-height: 1.6;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .reply-placeholder {
+            opacity: 0.7;
+            font-style: italic;
+        }
+
+        /* Mode Selection Cards Grid */
+        .modes-section {
+            margin-top: 0.5rem;
+        }
+        .modes-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+            color: #c0dcb0;
+            font-weight: 500;
+        }
+        .modes-grid {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            transition: all 0.3s ease;
+        }
+        .mode-card {
+            flex: 1;
+            min-width: 180px;
+            background: rgba(20, 30, 22, 0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 1.5rem;
+            padding: 1.4rem 1.2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            border: 1px solid rgba(255, 77, 46, 0.3);
+            position: relative;
+        }
+        /* glowing border effect */
+        .mode-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 1.5rem;
+            padding: 2px;
+            background: linear-gradient(125deg, #FF4D2E, #FF8C42, #2C5F2D);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .mode-card:hover::before {
+            opacity: 1;
+            animation: borderPulse 1s infinite alternate;
+        }
+        .mode-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.4);
+        }
+        @keyframes borderPulse {
+            0% { opacity: 0.5; }
+            100% { opacity: 0.9; filter: blur(0.2px);}
+        }
+        .mode-icon {
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, #FF8C42, #FF4D2E);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        .mode-card h4 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+            color: #FFE6D5;
+        }
+        .mode-card p {
+            font-size: 0.8rem;
+            color: #bbd4ab;
+        }
+
+        /* Exit mode bar */
+        .exit-mode-bar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 1rem;
+        }
+        .exit-btn {
+            background: rgba(30, 20, 18, 0.9);
+            backdrop-filter: blur(8px);
+            border: 1px solid #FF4D2E;
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            color: #FFAA7A;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .exit-btn:hover {
+            background: rgba(255, 77, 46, 0.2);
+            border-color: #FF8C42;
+            color: white;
+            transform: scale(1.02);
+        }
+
+        /* hidden class */
+        .hidden {
+            display: none;
+        }
+
+        /* animations */
+        .mode-card, .exit-btn {
+            animation: fadeSlideUp 0.4s ease-out;
+        }
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 700px) {
+            .modes-grid { flex-direction: column; }
+            .chat-input-area input { font-size: 0.95rem; }
+            .ai-reply-area { min-height: 220px; }
+        }
+    </style>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="bg-spot"></div>
+    <div class="bg-spot2"></div>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="logo-area">
+                <h2><i class="fas fa-brain"></i> Niyantra AI</h2>
+            </div>
+            <a href="index.html" class="home-link"><i class="fas fa-arrow-left"></i> Back to Home</a>
+        </div>
+
+        <!-- Searchbar-style chat input -->
+        <div class="chat-input-area">
+            <input type="text" id="userInput" placeholder="Ask anything about your preparation... e.g., 'Generate a mock test on calculus' or 'Summarize this topic'">
+            <button id="sendBtn"><i class="fas fa-paper-plane"></i></button>
+        </div>
+
+        <!-- AI reply area -->
+        <div class="ai-reply-area" id="aiReplyArea">
+            <div class="reply-header">
+                <i class="fas fa-robot"></i>
+                <span>Niyantra AI Assistant</span>
+            </div>
+            <div class="reply-content" id="replyContent">
+                <span class="reply-placeholder">✨ Ready to command your prep. Select a mode or type your request...</span>
+            </div>
+        </div>
+
+        <!-- Mode Selection Cards + Exit control dynamically -->
+        <div class="modes-section" id="modesSection">
+            <div class="modes-title"><i class="fas fa-microchip"></i> • ACTIVATE AI MODE</div>
+            <div class="modes-grid" id="modesGrid">
+                <div class="mode-card" data-mode="mocktest">
+                    <div class="mode-icon"><i class="fas fa-file-alt"></i></div>
+                    <h4>Mock Test Generator</h4>
+                    <p>Adaptive exams & full-length tests</p>
+                </div>
+                <div class="mode-card" data-mode="cheatcode">
+                    <div class="mode-icon"><i class="fas fa-bolt"></i></div>
+                    <h4>CheatCode</h4>
+                    <p>Instant revision, rapid summaries</p>
+                </div>
+                <div class="mode-card" data-mode="youtube">
+                    <div class="mode-icon"><i class="fab fa-youtube"></i></div>
+                    <h4>YouTube Video Summarizer</h4>
+                    <p>Condense lectures into crisp notes</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // ---------- Core Chat & Mode Logic ----------
+        // State management
+        let activeMode = null;        // 'mocktest', 'cheatcode', 'youtube'
+        let conversationHistory = [];  // store last messages for context (simple)
+        
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const replyContentDiv = document.getElementById('replyContent');
+        const modesGrid = document.getElementById('modesGrid');
+        const modesSection = document.getElementById('modesSection');
+        
+        // Helper to update UI: show/hide modes based on activeMode
+        function updateModeUI() {
+            if (activeMode) {
+                // Hide all mode cards by adding hidden class to each child
+                const cards = document.querySelectorAll('.mode-card');
+                cards.forEach(card => {
+                    card.classList.add('hidden');
+                });
+                // Create or show exit button if not existing
+                let exitBar = document.querySelector('.exit-mode-bar');
+                if (!exitBar) {
+                    exitBar = document.createElement('div');
+                    exitBar.className = 'exit-mode-bar';
+                    modesSection.insertBefore(exitBar, modesGrid);
+                }
+                exitBar.innerHTML = `<div class="exit-btn" id="exitModeBtn"><i class="fas fa-times-circle"></i> Exit ${getModeDisplayName(activeMode)} Mode</div>`;
+                const exitBtn = document.getElementById('exitModeBtn');
+                if (exitBtn) {
+                    exitBtn.addEventListener('click', () => {
+                        activeMode = null;
+                        updateModeUI();
+                        // reset conversation and show welcome placeholder
+                        conversationHistory = [];
+                        replyContentDiv.innerHTML = `<span class="reply-placeholder">✨ Mode deactivated. Select a new mode or ask anything directly.</span>`;
+                        // Optionally clear input
+                        userInput.value = '';
+                    });
+                }
+            } else {
+                // Remove exit bar and show all cards
+                const exitBar = document.querySelector('.exit-mode-bar');
+                if (exitBar) exitBar.remove();
+                const cards = document.querySelectorAll('.mode-card');
+                cards.forEach(card => {
+                    card.classList.remove('hidden');
+                });
+            }
+        }
+        
+        function getModeDisplayName(mode) {
+            if (mode === 'mocktest') return 'Mock Test Generator';
+            if (mode === 'cheatcode') return 'CheatCode';
+            if (mode === 'youtube') return 'YouTube Summarizer';
+            return mode;
+        }
+        
+        // Handle mode click: activate mode and reset chat
+        function activateMode(mode) {
+            activeMode = mode;
+            // Reset conversation for new mode
+            conversationHistory = [];
+            // Clear input field
+            userInput.value = '';
+            // Update UI to show exit button and hide other modes
+            updateModeUI();
+            // Set a nice welcome message based on mode
+            let welcomeMsg = '';
+            switch(mode) {
+                case 'mocktest':
+                    welcomeMsg = '🎯 **Mock Test Generator Activated**\n\nReady to challenge yourself. Tell me the subject (e.g., Physics, Mathematics, Chemistry) and topics, and I\'ll generate a custom mock test with answers.';
+                    break;
+                case 'cheatcode':
+                    welcomeMsg = '⚡ **CheatCode Mode — Instant Revision**\n\nProvide a topic, chapter, or concept. I\'ll compress key facts, formulas, and mnemonics in seconds.';
+                    break;
+                case 'youtube':
+                    welcomeMsg = '📺 **YouTube Video Summarizer Active**\n\nPaste a YouTube video URL or describe the lecture topic, and I\'ll generate concise, structured summaries.';
+                    break;
+                default: welcomeMsg = 'Mode activated. How can I assist?';
+            }
+            replyContentDiv.innerHTML = `<span>${welcomeMsg.replace(/\n/g, '<br>')}</span>`;
+        }
+        
+        // Attach click listeners to mode cards
+        function initModeCards() {
+            document.querySelectorAll('.mode-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    const mode = card.getAttribute('data-mode');
+                    if (mode) activateMode(mode);
+                });
+            });
+        }
+        
+        // Simulate intelligent AI reply based on active mode and user input
+        async function generateAIReply(userMessage, mode) {
+            // Simulate AI reasoning with some variety, premium responses.
+            // For mocktest, cheatcode, youtube summarizer — produce contextual output.
+            const lowerMsg = userMessage.toLowerCase();
+            
+            // Helper for delay simulation (realistic)
+            await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 400));
+            
+            if (mode === 'mocktest') {
+                if (lowerMsg.includes('physics') || lowerMsg.includes('mechanics') || lowerMsg.includes('kinematics')) {
+                    return `📝 **Mock Test: Physics (Kinematics & Dynamics)**\n\n**Section A (MCQs)**\n1. A particle moves with velocity v = 3t² + 2t. Find acceleration at t=2s.\n   a) 14 m/s²  b) 12 m/s²  c) 10 m/s²  d) 8 m/s²\n2. A ball thrown upward reaches max height H. Time of flight? (Neglect air resistance)\n   a) √(2H/g)  b) 2√(2H/g)  c) 2√(H/g)  d) √(H/g)\n\n**Section B (Numerical)**\nQ3. A car accelerates from rest at 4 m/s² for 5s then constant speed for 10s. Find total distance.\n\n*Want answer key or more questions? Type "show answers" or specify topic.*`;
+                } else if (lowerMsg.includes('math') || lowerMsg.includes('calculus')) {
+                    return `📐 **Mock Test: Mathematics (Calculus & Derivatives)**\n\n1. Differentiate: f(x) = e^{2x} · sin(3x)\n2. Evaluate ∫ (3x² + 2x + 1) dx\n3. Find the slope of tangent to y = ln(x) at x = e.\n\n*Need step-by-step solutions? Reply with "solve". Generate another set by typing "new test".*`;
+                } else {
+                    return `📋 **Custom Mock Test Generator**\n\nI'll create a tailored test for "${userMessage}".\n\nSample question format:\n- 5 MCQs on key concepts\n- 2 short answer problems\n\nWould you like to specify subject (Physics, Chemistry, Math, CS) or continue with general aptitude?`;
+                }
+            } 
+            else if (mode === 'cheatcode') {
+                if (lowerMsg.includes('newton') || lowerMsg.includes('laws of motion')) {
+                    return `⚡ **CheatCode: Newton's Laws**\n\n🔹 **First Law:** Inertia → body remains at rest/uniform motion unless net force acts.\n🔹 **Second Law:** F = ma (momentum change rate).\n🔹 **Third Law:** Action = - Reaction.\n✨ **Trick:** "Every force has equal opposite buddy."\n📌 Impulse = F Δt = Δp.\n\n*Want formula sheet or practice?*`;
+                } else if (lowerMsg.includes('organic') || lowerMsg.includes('chemistry')) {
+                    return `🧪 **CheatCode: Organic Chemistry Essentials**\n\n• **IUPAC:** Identify longest chain, priority order: -COOH > -CHO > -OH\n• **Inductive effect:** -I (withdrawing) vs +I (donating)\n• **Reaction types:** Substitution, Elimination, Addition\n✨ **Mnemonic:** "SN1 & SN2: 1 is stepwise, 2 is concerted".\n\n*Need reaction mechanisms?*`;
+                } else {
+                    return `⚡ **CheatCode: Smart Revision**\n\n✨ **Rapid summary for** "${userMessage}":\n✔️ Key formulas / definitions extracted\n✔️ 3 most important points\n✔️ Memory hook: Associate with everyday example\n\n*Want deeper notes? Ask with specific sub-topic.*`;
+                }
+            }
+            else if (mode === 'youtube') {
+                if (lowerMsg.includes('youtube.com') || lowerMsg.includes('youtu.be') || lowerMsg.includes('video')) {
+                    return `📺 **YouTube Summarizer**\n\n🎬 **Video Analysis:**\nI've processed the content from the provided link (simulated).\n\n**Summary:**\n• Main topic: Advanced concepts explained in 12 mins\n• Key takeaways: 3 core principles, 2 examples, 1 practice problem\n• Timestamp highlights: 2:15 — introduction, 5:40 — derivation, 9:10 — problem walkthrough\n\n🔗 *Want a detailed transcript notes? Type "detailed notes".*`;
+                } else {
+                    return `🎥 **YouTube Summarizer Ready**\n\nPlease provide a YouTube URL or describe the lecture/channel (e.g., "Summarize 3Blue1Brown calculus series"). I'll generate a concise, bullet-point summary, main ideas, and critical formulas.\n\n*Example: "paste link or topic like 'MIT 8.01 mechanics video'"*`;
+                }
+            } 
+            else {
+                // No active mode: general AI but still contextual
+                return `✨ **Niyantra Assistant**\n\nI can help with exam prep, mock tests, cheat sheets, and YouTube summaries.\n\n👉 Select a mode from the cards below to get specialized assistance, or simply tell me your goal. For example: "Create a mock test on thermodynamics" or "Summarize last-minute physics revision".\n\n*How can I command your preparation today?*`;
+            }
+        }
+        
+        // Main send message handler
+        async function handleSendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+            
+            // Display loading state
+            replyContentDiv.innerHTML = `<span style="opacity:0.7;"><i class="fas fa-spinner fa-pulse"></i> Processing command...</span>`;
+            
+            // Simulate AI thinking
+            let aiResponse = '';
+            try {
+                aiResponse = await generateAIReply(message, activeMode);
+            } catch (err) {
+                aiResponse = '⚠️ Sorry, an error occurred. Please try again.';
+            }
+            
+            // Append conversation to history (optional context)
+            conversationHistory.push({ role: 'user', content: message });
+            conversationHistory.push({ role: 'assistant', content: aiResponse });
+            if (conversationHistory.length > 10) conversationHistory.shift();
+            
+            // Format response with nicer line breaks
+            const formatted = aiResponse.replace(/\n/g, '<br>');
+            replyContentDiv.innerHTML = `<span>${formatted}</span>`;
+            userInput.value = '';
+        }
+        
+        // Event listeners
+        sendBtn.addEventListener('click', handleSendMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleSendMessage();
+        });
+        
+        // Initialize UI
+        initModeCards();
+        updateModeUI(); // no active mode at start
+        
+        // additional polish: set active mode null on load
+        activeMode = null;
+        updateModeUI();
+    </script>
+</body>
+</html>
